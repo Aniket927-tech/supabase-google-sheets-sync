@@ -82,7 +82,7 @@ This system ensures:
 
 - Google Service Account using OAuth 2.0  
 - Supabase Service Role JWT for backend access  
-- PostgreSQL Row Level Security (RLS) enabled  
+- PostgreSQL Row Level Security (RLS) disabled  
 - Secrets stored securely in Supabase environment variables  
 
 ---
