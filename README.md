@@ -1,4 +1,4 @@
-## ⚡ Quick Start
+##  Quick Start
 1. Create a Supabase project
 2. Create required tables (`employee_contacts`, `sync_logs`)
 3. Configure Google Service Account
@@ -12,7 +12,7 @@ Supabase – Google Sheets Sync System
 
 ---
 
-## 📋 Project Description
+##  Project Description
 A robust, automated synchronization system that connects Google Sheets with a Supabase (PostgreSQL) database for managing employee contact information.
 
 This system ensures:
@@ -23,7 +23,7 @@ This system ensures:
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 - **Sync**  
   Automatic synchronization between Google Sheets and Supabase using Edge Functions.
@@ -54,7 +54,7 @@ This system ensures:
 
 ---
 
-## 🚀 How It Works (High Level)
+##  How It Works (High Level)
 
 1. Read employee data from Google Sheets  
 2. Validate and sanitize incoming rows  
@@ -64,7 +64,7 @@ This system ensures:
 
 ---
 
-## 🏗️ Tech Stack
+##  Tech Stack
 
 ### Backend Infrastructure
 - PostgreSQL 15+ (Supabase) as the primary database  
@@ -78,7 +78,7 @@ This system ensures:
 
 ---
 
-## 🔐 Authentication & Security
+##  Authentication & Security
 
 - Google Service Account using OAuth 2.0  
 - Supabase Service Role JWT for backend access  
@@ -87,7 +87,7 @@ This system ensures:
 
 ---
 
-## 📊 System Architecture
+##  System Architecture
 
 Data flows in the following order:
 
@@ -103,7 +103,7 @@ Google Sheets
 
 ---
 
-## 🔄 Sync Strategy
+##  Sync Strategy
 
 ### Phase 1: Google Sheets → Supabase
 - Read rows from columns A to E  
@@ -119,7 +119,7 @@ Google Sheets
 
 ---
 
-## 🧠 Conflict Resolution
+##  Conflict Resolution
 
 - Duplicate email → existing record is updated  
 - Sheet data newer than database → Sheet wins  
@@ -128,7 +128,7 @@ Google Sheets
 
 ---
 
-## 🗄️ Database Design
+##  Database Design
 
 ### employee_contacts
 - UUID primary key  
@@ -143,7 +143,7 @@ Google Sheets
 
 ---
 
-## 🔐 Security Architecture
+##  Security Architecture
 
 ### Authentication
 - Google OAuth 2.0 Service Account  
@@ -160,14 +160,14 @@ Google Sheets
 
 ---
 
-## ⏱ Scheduling & Automation
+##  Scheduling & Automation
 
 - `pg_cron` triggers the Edge Function every 5 minutes  
 - Stateless serverless execution  
 - Automatically scales with load  
 
 ---
-## 🧩 Project Overview
+##  Project Overview
 
 This project implements a near real-time, bi-directional sync between
 Google Sheets and Supabase using Supabase Edge Functions.
@@ -178,5 +178,5 @@ while Supabase serves as the backend database and source of truth.
 The system validates rows, syncs completed data, and writes status + visual
 feedback back to the sheet automatically.
 
-## 👨‍💻 Author
+## Author
 Aniket Gunjal
