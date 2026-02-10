@@ -167,6 +167,16 @@ Google Sheets
 - Automatically scales with load  
 
 ---
+## 🧩 Project Overview
+
+This project implements a near real-time, bi-directional sync between
+Google Sheets and Supabase using Supabase Edge Functions.
+
+Google Sheets acts as a simple data entry interface for non-technical users,
+while Supabase serves as the backend database and source of truth.
+
+The system validates rows, syncs completed data, and writes status + visual
+feedback back to the sheet automatically.
 
 ## 👨‍💻 Author
 Aniket Gunjal
