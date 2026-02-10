@@ -8,12 +8,12 @@
 
 # supabase-google-sheets-sync
 
-Supabase – Google Sheets Bi-Directional Sync System
+Supabase – Google Sheets Sync System
 
 ---
 
 ## 📋 Project Description
-A robust, automated bi-directional synchronization system that connects Google Sheets with a Supabase (PostgreSQL) database for managing employee contact information.
+A robust, automated synchronization system that connects Google Sheets with a Supabase (PostgreSQL) database for managing employee contact information.
 
 This system ensures:
 - Data consistency across both platforms  
@@ -25,7 +25,7 @@ This system ensures:
 
 ## ✨ Key Features
 
-- **Bi-Directional Sync**  
+- **Sync**  
   Automatic synchronization between Google Sheets and Supabase using Edge Functions.
 
 - **Near Real-Time Updates**  
