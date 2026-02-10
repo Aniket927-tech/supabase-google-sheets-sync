@@ -3,34 +3,140 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-// index.ts
-
-import { serve } from "https://deno.land/std@0.178.0/http/server.ts";
-// Use npm import to avoid Deno bundling errors
-import { createClient } from "npm:@supabase/supabase-js";
-
-// Get Supabase URL and SERVICE_KEY from secrets
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_KEY")!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-serve(async (req) => {
+Deno.serve(async (_req) => {
   try {
-    // Receive JSON payload from Google Sheets
-    const data = await req.json();
+    const clientEmail = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_EMAIL");
+    const privateKey = Deno.env.get("GOOGLE_PRIVATE_KEY");
+    const spreadsheetId = Deno.env.get("SPREADSHEET_ID");
+    const sheetName = Deno.env.get("SHEET_NAME");
 
-    // Upsert the data into your Supabase table
-    const { error } = await supabase.from("sheet_data").upsert(data);
-
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    if (!clientEmail || !privateKey || !spreadsheetId || !sheetName) {
+      return new Response(
+        JSON.stringify({ error: "Missing environment variables" }),
+        { status: 500 }
+      );
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    // --- Create JWT for Google OAuth ---
+    const now = Math.floor(Date.now() / 1000);
+
+    const header = {
+      alg: "RS256",
+      typ: "JWT",
+    };
+
+    const payload = {
+      iss: clientEmail,
+      scope: "https://www.googleapis.com/auth/spreadsheets",
+      aud: "https://oauth2.googleapis.com/token",
+      exp: now + 3600,
+      iat: now,
+    };
+
+    const base64url = (obj: unknown) =>
+      btoa(JSON.stringify(obj))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+
+    const unsignedJwt =
+      `${base64url(header)}.${base64url(payload)}`;
+
+    const key = await crypto.subtle.importKey(
+      "pkcs8",
+      pemToArrayBuffer(privateKey),
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const signature = await crypto.subtle.sign(
+      "RSASSA-PKCS1-v1_5",
+      key,
+      new TextEncoder().encode(unsignedJwt)
+    );
+
+    const jwt =
+      `${unsignedJwt}.${arrayBufferToBase64(signature)}`;
+
+    // --- Exchange JWT for access token ---
+    const tokenRes = await fetch(
+      "https://oauth2.googleapis.com/token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+          assertion: jwt,
+        }),
+      }
+    );
+
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+
+    // --- READ from Sheet ---
+    const readRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}!A1:B5`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+
+    const readData = await readRes.json();
+
+    // --- WRITE to Sheet ---
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}!C1?valueInputOption=RAW`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          values: [["✅ Written via Supabase Edge Function"]],
+        }),
+      }
+    );
+
+    return new Response(
+      JSON.stringify({ success: true, readData }),
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: err.message }),
+      { status: 500 }
+    );
   }
 });
+
+// ---- helpers ----
+function pemToArrayBuffer(pem: string) {
+  const b64 = pem
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s+/g, "");
+  const binary = atob(b64);
+  const buf = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    buf[i] = binary.charCodeAt(i);
+  }
+  return buf.buffer;
+}
+
+function arrayBufferToBase64(buf: ArrayBuffer) {
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+
 
 
 
